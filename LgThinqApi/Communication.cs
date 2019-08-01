@@ -11,8 +11,19 @@ using LGThingApi.Structures;
 
 namespace LGThingApi
 {
+    /// <summary>
+    /// Used to communicate with LG Servers
+    /// </summary>
     public static class Communication
     {
+        /// <summary>
+        /// Posts request to specified LG URL
+        /// </summary>
+        /// <param name="url">URI to post to</param>
+        /// <param name="data">Data to send</param>
+        /// <param name="accessToken">User accesss token if available</param>
+        /// <param name="sessionId">Session ID if available</param>
+        /// <returns>Returns result data for request</returns>
         public async static Task<LgedmRoot> Post(string url, LgedmRoot data, string accessToken = null, string sessionId = null)
         {
             HttpClient communicationClient = new HttpClient();
@@ -51,14 +62,28 @@ namespace LGThingApi
             communicationClient.DefaultRequestHeaders.Clear();
             return dataReturn;
         }
-
+        /// <summary>
+        /// Low level communication
+        /// </summary>
         public static class LGGateway
         {
-            static string Gateway_Url => "https://kic.lgthinq.com:46030/api/common/gatewayUriList";
+            /// <summary>
+            /// List of all gateways available from LG
+            /// </summary>
+            const string Gateway_Url = "https://kic.lgthinq.com:46030/api/common/gatewayUriList";
+            /// <summary>
+            /// Data Root, what we are working with
+            /// </summary>
             public static LgedmRoot LgedmRoot { get; set; } = new LgedmRoot();
+            /// <summary>
+            /// Open asynchronously connection to LG and ask for country located available gateway, download all available data returned
+            /// </summary>
+            /// <param name="countryCode">Country code like en_US</param>
+            /// <param name="langCode">Language code like en</param>
+            /// <returns>Stores data into <see cref="LgedmRoot" langword="static">LgedmRoot</see></returns>
             public async static Task OpenConnection(string countryCode, string langCode)
             {
-                LgedmRoot.ReplaceWithNewData(await Communication.Post(Gateway_Url, new LgedmRoot() { LangCode = langCode, CountryCode = countryCode }));
+                LgedmRoot.ReplaceWithNewData(await Post(Gateway_Url, new LgedmRoot() { LangCode = langCode, CountryCode = countryCode }));
 
                 HttpClient communicationClient = new HttpClient();
                 var res = await communicationClient.GetAsync(LgedmRoot.LangPackCommonUri);
@@ -75,15 +100,22 @@ namespace LGThingApi
                     LgedmRoot.InitTranslate = new Translate() { Pack = new Dictionary<string, string>() };
                 communicationClient.Dispose();
             }
+            /// <summary>
+            /// Dispose all known data and stop all communication
+            /// </summary>
             public static void CloseConnection()
             {
                 LgedmRoot = new LgedmRoot();
             }
+            /// <summary>
+            /// Get all devices from user, WARNING, user has to be authenticated before calling this
+            /// </summary>
+            /// <returns>Stores devices into <see cref="LgedmRoot" langword="static">LgedmRoot</see></returns>
             public static async Task GetDevices()
             {
                 HttpClient communicationClient = new HttpClient();
                 LgedmRoot.ReplaceWithNewData(await Post(Path.Combine(LgedmRoot.ThinqUri.ToString(), "device/deviceList"), LgedmRoot, LGOAuth.AuthorizationData.AccessToken, LgedmRoot.JsessionId));
-                foreach (var item in LgedmRoot.Item)
+                foreach (var item in LgedmRoot.Item) //Replace this with Pararell?
                 {
                     var res = await communicationClient.GetAsync(item.LangPackModelUri);
                     string data = await res.Content.ReadAsStringAsync();
@@ -99,29 +131,55 @@ namespace LGThingApi
                 }
                 communicationClient.Dispose();
             }
+            /// <summary>
+            /// Start device monitoring, monitoring means checking its state
+            /// </summary>
+            /// <param name="deviceToMonitor">Device which we want to monitor</param>
+            /// <returns>Saves WorkID (Process) back to device it was given</returns>
             public static async Task StartMonitoring(Device deviceToMonitor)
             {
+                if (!string.IsNullOrWhiteSpace(deviceToMonitor.WorkID)) //Device is already monitored, restart monitor
+                    await StopMonitoring(deviceToMonitor);
+
                 deviceToMonitor.WorkID = Guid.NewGuid().ToString();
                 LgedmRoot.ReplaceWithNewData(await Post(Path.Combine(LgedmRoot.ThinqUri.ToString(), "rti/rtiMon"), (new LgedmRoot() { Cmd = "Mon", CmdOpt = "Start", DeviceID = deviceToMonitor.DeviceID, WorkID = deviceToMonitor.WorkID }), LGOAuth.AuthorizationData.AccessToken, LgedmRoot.JsessionId));
                 deviceToMonitor.WorkID = LgedmRoot.WorkID;
             }
+            /// <summary>
+            /// Get results from monitoring, this should be called repeatedly, if called too soon after starting monitor, it can return null
+            /// </summary>
+            /// <param name="deviceToMonitor">Device which contains WorkID (Process)</param>
+            /// <returns>Returns data from LG Api, it can be bit array or JSON</returns>
             public static async Task<byte[]> PollMonitor(Device deviceToMonitor)
             {
                 LgedmRoot.ReplaceWithNewData(await Post(Path.Combine(LgedmRoot.ThinqUri.ToString(), "rti/rtiResult"), (new LgedmRoot() { WorkList = new[] { new WorkList() { DeviceId = deviceToMonitor.DeviceID, WorkId = deviceToMonitor.WorkID } } }), LGOAuth.AuthorizationData.AccessToken, LgedmRoot.JsessionId));
                 var item = (from temp in LgedmRoot.WorkList where temp.DeviceId == deviceToMonitor.DeviceID select temp).First();
                 if (item.ReturnData != null)
-                {
                     return System.Convert.FromBase64String(item.ReturnData);
-                }
                 return null;
             }
+            /// <summary>
+            /// Cancel and stop monitoring on specific device
+            /// </summary>
+            /// <param name="deviceToMonitor">Device which to cancel</param>
+            /// <returns></returns>
             public static async Task StopMonitoring(Device deviceToMonitor)
             {
                 LgedmRoot.ReplaceWithNewData(await Post(Path.Combine(LgedmRoot.ThinqUri.ToString(), "rti/rtiMon"), (new LgedmRoot() { Cmd = "Mon", CmdOpt = "Stop", DeviceID = deviceToMonitor.DeviceID, WorkID = deviceToMonitor.WorkID }), LGOAuth.AuthorizationData.AccessToken, LgedmRoot.JsessionId));
             }
+            /// <summary>
+            /// Authentication service
+            /// </summary>
             public static class LGOAuth
             {
+                /// <summary>
+                /// Authorized data containing Access Token and Refresh Token
+                /// </summary>
                 public static AuthorizationStructure AuthorizationData { get; set; }
+                /// <summary>
+                /// Get URL for user to log-in through
+                /// </summary>
+                /// <returns>Returns url from LG</returns>
                 public static string GetOauthUrl()
                 {
                     if (LgedmRoot == null)
@@ -130,6 +188,10 @@ namespace LGThingApi
                     string url = Path.Combine(LgedmRoot.EmpUri.ToString(), "login/sign_in");
                     return ($"{url}?country={LgedmRoot.CountryCode}&language={LgedmRoot.LangCode}&svcCode=SVC202&authSvr=oauth2&client_id=LGAO221A02&division=ha&grant_type=password");
                 }
+                /// <summary>
+                /// Parse access and refresh tokens based on response from Oauth Url from <see cref="GetOauthUrl" langword="static">GetOauthUrl</see>
+                /// </summary>
+                /// <param name="response">Response from <see cref="GetOauthUrl" langword="static">GetOauthUrl</see></param>
                 public static void AuthorizeBasedOnOauth(string response)
                 {
                     if (response == null)
@@ -139,13 +201,23 @@ namespace LGThingApi
 
                     AuthorizationData = new AuthorizationStructure() { AccessToken = access, RefreshToken = refresh, GrantType = "refresh_token" };
                 }
+                /// <summary>
+                /// Parse and login refresh and access tokens based on last known access token
+                /// </summary>
+                /// <returns></returns>
                 public async static Task Login()
                 {
                     LgedmRoot.LoginType = "EMP";
                     LgedmRoot.Token = AuthorizationData.AccessToken;
                     LgedmRoot.ReplaceWithNewData(await Post(Path.Combine(LgedmRoot.ThinqUri.ToString(), "member/login"), LgedmRoot));
                 }
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
+                              /// <summary>
+                              /// Refreshes Access Token based on Refresh Token
+                              /// </summary>
+                              /// <returns></returns>
                 public async static Task RefreshToken()//TO-DO
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
                 {
                     return;
                     /*HttpClient communicationClient = new HttpClient();

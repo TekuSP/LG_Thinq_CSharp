@@ -2,17 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using static LGThingApi.Extensions;
+using LGThingApi.Extensions;
 
 namespace LGThingApi.Structures
 {
-    [Serializable]
     public class LGReturnRoot
     {
         [JsonProperty("lgedmRoot")]
         public LgedmRoot LgedmRoot { get; set; }
     }
-    [Serializable]
     public class LgedmRoot
     {
         [JsonProperty("returnCd")]

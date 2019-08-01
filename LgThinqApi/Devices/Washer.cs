@@ -4,17 +4,18 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading.Tasks;
-using  static LGThingApi.Extensions;
+using  LGThingApi.Extensions;
 using  LGThingApi.Structures;
 
 namespace LGThingApi.Devices
 {
-    public class Washer : SmartDevice
+    public class Washer : SmartDevice //Test implementation on washer
     {
         public Washer(Device fromDevice) : base (fromDevice)
         {
             if (fromDevice.DeviceType != Enums.DeviceType.WASHER)
                 throw new ArgumentException("Not washer!");
+
             State = GetOptions(ModelInfo.Value.State.Option);
             SpinSpeed = GetOptions(ModelInfo.Value.SpinSpeed.Option);
             Wash = GetOptions(ModelInfo.Value.Wash.Option);
@@ -30,6 +31,7 @@ namespace LGThingApi.Devices
             ChildLock = GetOptions(ModelInfo.Value.ChildLock.Option);
             CreaseCare = GetOptions(ModelInfo.Value.CreaseCare.Option);
         }
+        //Move to base class? Fills translations
         List<string> GetOptions(Dictionary<string,string> input)
         {
             List<string> output = new List<string>();
@@ -51,6 +53,11 @@ namespace LGThingApi.Devices
             }
             return output;
         }
+        /// <summary>
+        /// This override is required to correctly handle polled data
+        /// </summary>
+        /// <param name="sender">Sender</param>
+        /// <param name="polledData">Polled data from LG</param>
         public override void PollMonitor(object sender, byte[] polledData)
         {
             byte hour = 0;

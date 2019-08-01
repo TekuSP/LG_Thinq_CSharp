@@ -3,11 +3,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using static LGThingApi.Enums;
-using static LGThingApi.Extensions;
+using LGThingApi.Extensions;
 
 namespace LGThingApi.Structures
 {
-    [Serializable]
     public class Device
     {
         public Device(Device anotherDevice)
@@ -530,13 +529,13 @@ namespace LGThingApi.Structures
         public State PreState { get; set; }
 
         [JsonProperty("RemoteStart")]
-        public ChildLock RemoteStart { get; set; }
+        public OptionProperty RemoteStart { get; set; }
 
         [JsonProperty("InitialBit")]
         public InitialBit InitialBit { get; set; }
 
         [JsonProperty("ChildLock")]
-        public ChildLock ChildLock { get; set; }
+        public OptionProperty ChildLock { get; set; }
 
         [JsonProperty("TCLCount")]
         public InitialTimeH TclCount { get; set; }
@@ -560,43 +559,43 @@ namespace LGThingApi.Structures
         public InitialTimeH InitialTimeM { get; set; }
 
         [JsonProperty("Wash")]
-        public ChildLock Wash { get; set; }
+        public OptionProperty Wash { get; set; }
 
         [JsonProperty("SpinSpeed")]
-        public ChildLock SpinSpeed { get; set; }
+        public OptionProperty SpinSpeed { get; set; }
 
         [JsonProperty("WaterTemp")]
-        public ChildLock WaterTemp { get; set; }
+        public OptionProperty WaterTemp { get; set; }
 
         [JsonProperty("RinseOption")]
-        public ChildLock RinseOption { get; set; }
+        public OptionProperty RinseOption { get; set; }
 
         [JsonProperty("DryLevel")]
-        public ChildLock DryLevel { get; set; }
+        public OptionProperty DryLevel { get; set; }
 
         [JsonProperty("TurboWash")]
-        public ChildLock TurboWash { get; set; }
+        public OptionProperty TurboWash { get; set; }
 
         [JsonProperty("Steam")]
-        public ChildLock Steam { get; set; }
+        public OptionProperty Steam { get; set; }
 
         [JsonProperty("PreWash")]
-        public ChildLock PreWash { get; set; }
+        public OptionProperty PreWash { get; set; }
 
         [JsonProperty("MedicRinse")]
-        public ChildLock MedicRinse { get; set; }
+        public OptionProperty MedicRinse { get; set; }
 
         [JsonProperty("SteamSoftener")]
-        public ChildLock SteamSoftener { get; set; }
+        public OptionProperty SteamSoftener { get; set; }
 
         [JsonProperty("LoadItem")]
-        public ChildLock LoadItem { get; set; }
+        public OptionProperty LoadItem { get; set; }
 
         [JsonProperty("Standby")]
-        public ChildLock Standby { get; set; }
+        public OptionProperty Standby { get; set; }
 
         [JsonProperty("CreaseCare")]
-        public ChildLock CreaseCare { get; set; }
+        public OptionProperty CreaseCare { get; set; }
 
         [JsonProperty("Option1")]
         public Option1Class Option1 { get; set; }
@@ -614,7 +613,7 @@ namespace LGThingApi.Structures
         public ErrorClass SmartCourse { get; set; }
     }
 
-    public class ChildLock
+    public class OptionProperty
     {
         [JsonProperty("type")]
         public string Type { get; set; }
@@ -714,7 +713,7 @@ namespace LGThingApi.Structures
         public Dictionary<string, string> Option { get; set; }
     }
 
-    [Serializable]
+
     public class WorkList
     {
         [JsonProperty("deviceId")]

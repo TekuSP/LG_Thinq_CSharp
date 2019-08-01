@@ -4,8 +4,14 @@ using System.Text;
 
 namespace LGThingApi
 {
+    /// <summary>
+    /// Implemented enums
+    /// </summary>
     public static class Enums
     {
+        /// <summary>
+        /// What device is it?
+        /// </summary>
         public enum DeviceType
         {
             REFRIGERATOR = 101,
@@ -34,6 +40,9 @@ namespace LGThingApi
             EMS_AIR_STATION = 4001,
             AIR_SENSOR = 4003
         }
+        /// <summary>
+        /// For washing machines only, state of washing machine
+        /// </summary>
         public enum WasherState
         {
             ADD_DRAIN,

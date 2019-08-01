@@ -5,7 +5,6 @@ using System.Text;
 
 namespace LGThingApi.Structures
 {
-    [Serializable]
     public class AuthorizationStructure
     {
         [JsonProperty("access_token")]

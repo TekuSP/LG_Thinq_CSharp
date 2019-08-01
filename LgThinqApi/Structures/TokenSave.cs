@@ -4,7 +4,6 @@ using System.Text;
 
 namespace LGThingApi.Structures
 {
-    [Serializable]
     public class UserSaveInfo
     {
         public AuthorizationStructure TokensInfo { get; set; }
