@@ -34,7 +34,7 @@ namespace ThinqAClient.Pages.Device
         {
            var wash = new Washer(devices.First());
            wash.StartMonitor(500);
-
+            stack.Children.Add(new Devices.Washer() { DataContext = wash });
         }
     }
 }

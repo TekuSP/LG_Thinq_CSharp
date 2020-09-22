@@ -2,21 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Text;
 using System.Threading.Tasks;
-using  LGThingApi.Extensions;
-using  LGThingApi.Structures;
+using LGThingApi.Extensions;
+using LGThingApi.Structures;
+using PropertyChanged;
 
 namespace LGThingApi.Devices
 {
-    public class Washer : SmartDevice //Test implementation on washer
+    public class Washer : SmartDevice, INotifyPropertyChanged //Test implementation on washer
     {
-        public Washer(Device fromDevice) : base (fromDevice)
+        public Washer(Device fromDevice) : base(fromDevice)
         {
             if (fromDevice.DeviceType != Enums.DeviceType.WASHER)
                 throw new ArgumentException("Not washer!");
 
-            State = GetOptions(ModelInfo.Value.State.Option);
+            States = GetOptions(ModelInfo.Value.State.Option);
             SpinSpeed = GetOptions(ModelInfo.Value.SpinSpeed.Option);
             Wash = GetOptions(ModelInfo.Value.Wash.Option);
             WaterTemp = GetOptions(ModelInfo.Value.WaterTemp.Option);
@@ -31,8 +33,11 @@ namespace LGThingApi.Devices
             ChildLock = GetOptions(ModelInfo.Value.ChildLock.Option);
             CreaseCare = GetOptions(ModelInfo.Value.CreaseCare.Option);
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
         //Move to base class? Fills translations
-        List<string> GetOptions(Dictionary<string,string> input)
+        List<string> GetOptions(Dictionary<string, string> input)
         {
             List<string> output = new List<string>();
             foreach (var item in input.Values)
@@ -73,6 +78,7 @@ namespace LGThingApi.Devices
                         break;
                     case "Remain_Time_M":
                         RemainingTime = new TimeSpan(hour, bytes, 0);
+                        RemainingSeconds = ( (InitialTime.TotalSeconds - RemainingTime.TotalSeconds) / InitialSeconds * 100);
                         Console.WriteLine(RemainingTime);
                         break;
                     case "Initial_Time_H":
@@ -80,6 +86,7 @@ namespace LGThingApi.Devices
                         break;
                     case "Initial_Time_M":
                         InitialTime = new TimeSpan(hour, bytes, 0);
+                        InitialSeconds = InitialTime.TotalSeconds;
                         Console.WriteLine(InitialTime);
 
                         break;
@@ -92,7 +99,7 @@ namespace LGThingApi.Devices
                         break;
                     case "State":
                         StateID = bytes;
-                        Console.WriteLine(State[StateID]);
+                        Console.WriteLine(States[StateID]);
                         break;
                     case "SpinSpeed":
                         SpinSpeedID = bytes;
@@ -124,7 +131,7 @@ namespace LGThingApi.Devices
                         break;
                     case "PreState":
                         PreStateID = bytes;
-                        Console.WriteLine(State[PreStateID]);
+                        Console.WriteLine(States[PreStateID]);
                         break;
                     case "TCLCount":
                         TCLCount = bytes;
@@ -147,8 +154,26 @@ namespace LGThingApi.Devices
         public int StateID { get; set; }
         public int PreStateID { get; set; }
 
-        public List<string> State { get; set; }
+        public List<string> States { get; set; }
 
+        public string State
+        {
+            get
+            {
+                if (States.Count >= StateID)
+                    return States[StateID];
+                return null;
+            }
+        }
+        public string PreState
+        {
+            get
+            {
+                if (States.Count >= PreStateID)
+                    return States[PreStateID];
+                return null;
+            }
+        }
         public int RemoteStartID { get; set; }
         public List<string> RemoteStart { get; set; }
 
@@ -162,6 +187,16 @@ namespace LGThingApi.Devices
         public TimeSpan ReserveTime { get; set; }
         public TimeSpan RemainingTime { get; set; }
         public TimeSpan InitialTime { get; set; }
+
+        public double InitialSeconds
+        {
+            get;set;
+        }
+
+        public double RemainingSeconds
+        {
+            get; set;
+        }
 
         public int WashID { get; set; }
         public List<string> Wash { get; set; }

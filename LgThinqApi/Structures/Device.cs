@@ -475,6 +475,11 @@ namespace LGThingApi.Structures
 
         [JsonProperty("value")]
         public string Value { get; set; }
+
+        public override string ToString()
+        {
+            return Comment;
+        }
     }
 
     public class Push
