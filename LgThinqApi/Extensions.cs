@@ -2,7 +2,9 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.Unicode;
 
 namespace LGThingApi.Extensions
 {
@@ -139,6 +141,28 @@ namespace LGThingApi.Extensions
         public static bool operator !=(Range<T> left, Range<T> right)
         {
             return !(left == right);
+        }
+    }
+
+    public static class OAuth
+    {
+        /// <summary>
+        /// Timestamp generation for LG
+        /// </summary>
+        /// <returns>Returns LG compatible timestamp</returns>
+        public static string GetTimestampNow() => DateTime.UtcNow.ToString("ddd, dd MMM yyy HH:mm:ss +0000", System.Globalization.CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// SHA1 algorithm for OAuth signatures, compatible with LG
+        /// </summary>
+        /// <param name="message">Message to sign</param>
+        /// <param name="secret">Secret to sign with</param>
+        /// <returns>Base64 OAuth signature</returns>
+        public static string GetOAuthSignature(string message, string secret)
+        {
+            HMACSHA1 hmSha1 = new HMACSHA1(Encoding.UTF8.GetBytes(secret));
+            var hash = hmSha1.ComputeHash(Encoding.UTF8.GetBytes(message));
+            return System.Convert.ToBase64String(hash);
         }
     }
 }

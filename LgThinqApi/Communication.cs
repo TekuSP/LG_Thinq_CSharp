@@ -4,10 +4,11 @@ using System.Text;
 using System.Net.Http;
 using System.IO;
 using System.Threading.Tasks;
-using static LGThingApi.Structures.Translate;
 using Newtonsoft.Json;
 using System.Linq;
 using LGThingApi.Structures;
+using LGThingApi.Extensions;
+using System.Net.Http.Headers;
 
 namespace LGThingApi
 {
@@ -53,7 +54,15 @@ namespace LGThingApi
                 switch (dataReturn.ReturnCd)
                 {
                     case "0102":
-                        throw new LGExceptions.NotLoggedInException();
+                        if (await LGGateway.LGOAuth.RefreshToken())
+                        {
+                            await Post(url, data, accessToken, sessionId);
+                        }
+                        else
+                        {
+                            throw new LGExceptions.NotLoggedInException();
+                        }
+                        break;
                     case "0106":
                         throw new LGExceptions.NotConnectedException();
                     default:
@@ -204,42 +213,38 @@ namespace LGThingApi
                 /// <summary>
                 /// Parse and login refresh and access tokens based on last known access token
                 /// </summary>
-                /// <returns></returns>
                 public async static Task Login()
                 {
                     LgedmRoot.LoginType = "EMP";
                     LgedmRoot.Token = AuthorizationData.AccessToken;
                     LgedmRoot.ReplaceWithNewData(await Post(Path.Combine(LgedmRoot.ThinqUri.ToString(), "member/login"), LgedmRoot));
                 }
-#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
-                              /// <summary>
-                              /// Refreshes Access Token based on Refresh Token
-                              /// </summary>
-                              /// <returns></returns>
-                public async static Task RefreshToken()//TO-DO
-#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
+                /// <summary>
+                /// Refreshes Access Token based on Refresh Token
+                /// </summary>
+                /// <returns>Returns true on success, false on not being able to refresh</returns>
+                public async static Task<bool> RefreshToken()
                 {
-                    return;
-                    /*HttpClient communicationClient = new HttpClient();
+                    if (LgedmRoot == null || AuthorizationData == null || AuthorizationData.RefreshToken == null)
+                        return false;
+                    HttpClient communicationClient = new HttpClient();
                     string url = Path.Combine(LgedmRoot.OauthUri.ToString(), "oauth2/token");
-                    string timeStamp = OAuthBase.GenerateTimeStamp();
-                    url = ($"{url}?grant_type={AuthorizationData.GrantType}&refresh_token={AuthorizationData.RefreshToken}");
-                    string signature = OAuthBase.GenerateOAuthSignature($"{url}\n{timeStamp}", "c053c2a6ddeb7ad97cb0eed0dcb31cf8");
+                    string timeStamp = OAuth.GetTimestampNow();
+                    string reqUrl = $"/oauth2/token?grant_type={AuthorizationData.GrantType}&refresh_token={AuthorizationData.RefreshToken}";
+                    string signature = OAuth.GetOAuthSignature($"{reqUrl}\n{timeStamp}", "c053c2a6ddeb7ad97cb0eed0dcb31cf8");
 
                     communicationClient.DefaultRequestHeaders.Add("lgemp-x-app-key", "LGAO221A02");
                     communicationClient.DefaultRequestHeaders.Add("lgemp-x-signature", signature);
                     communicationClient.DefaultRequestHeaders.Add("lgemp-x-date", timeStamp);
-                    communicationClient.DefaultRequestHeaders.Add("Accept", "application/json");
+                    communicationClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-                    var data = JsonConvert.SerializeObject(AuthorizationData);
+                    var content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>>() { new KeyValuePair<string, string>("grant_type", AuthorizationData.GrantType), new KeyValuePair<string, string>("refresh_token", AuthorizationData.RefreshToken) });
 
-                    var result = await communicationClient.PostAsync(url, new StringContent(data, Encoding.UTF8, "application/json"));
-
+                    var result = await communicationClient.PostAsync(url, content);
                     var str = await result.Content.ReadAsStringAsync();
-
-                    var obj = JsonConvert.DeserializeObject(str);
-
-                    communicationClient.DefaultRequestHeaders.Clear();*/
+                    AuthorizationData.AccessToken = JsonConvert.DeserializeObject<AuthorizationStructure>(str).AccessToken;
+                    communicationClient.Dispose();
+                    return true;
                 }
             }
         }

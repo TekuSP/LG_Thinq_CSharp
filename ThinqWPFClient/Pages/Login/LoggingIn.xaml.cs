@@ -37,10 +37,11 @@ namespace ThinqAClient.Pages.Login
             {
                 ChangeStatus("Openning connection...");
                 await LGThingApi.Communication.LGGateway.OpenConnection("CZ", "cs-CZ");//Put here your country and language
+                ChangeStatus("Refreshing token...");
+                await LGThingApi.Communication.LGGateway.LGOAuth.RefreshToken();
                 ChangeStatus("Checking user data...");
                 await LGThingApi.Communication.LGGateway.LGOAuth.Login();
-                ChangeStatus("Resetting token and saving...");
-                await LGThingApi.Communication.LGGateway.LGOAuth.RefreshToken();
+                ChangeStatus("Saving user info...");
                 File.WriteAllText("user.json",Newtonsoft.Json.JsonConvert.SerializeObject(new UserSaveInfo() { TokensInfo = LGThingApi.Communication.LGGateway.LGOAuth.AuthorizationData, UserName = LGThingApi.Communication.LGGateway.LgedmRoot.Account }));
                 ChangeStatus("Loading your devices...");
                 await LGThingApi.Communication.LGGateway.GetDevices();
