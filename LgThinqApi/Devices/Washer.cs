@@ -11,7 +11,7 @@ using PropertyChanged;
 
 namespace LGThingApi.Devices
 {
-    public class Washer : SmartDevice, INotifyPropertyChanged //Test implementation on washer
+    public class Washer : SmartDevice //Test implementation on washer
     {
         public Washer(Device fromDevice) : base(fromDevice)
         {
@@ -33,8 +33,6 @@ namespace LGThingApi.Devices
             ChildLock = GetOptions(ModelInfo.Value.ChildLock.Option);
             CreaseCare = GetOptions(ModelInfo.Value.CreaseCare.Option);
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         //Move to base class? Fills translations
         List<string> GetOptions(Dictionary<string, string> input)
@@ -79,6 +77,10 @@ namespace LGThingApi.Devices
                     case "Remain_Time_M":
                         RemainingTime = new TimeSpan(hour, bytes, 0);
                         RemainingSeconds = ( (InitialTime.TotalSeconds - RemainingTime.TotalSeconds) / InitialSeconds * 100);
+                        if ((int)RemainingSeconds == 100)
+                            IsWorking = false;
+                        else
+                            IsWorking = true;
                         Console.WriteLine(RemainingTime);
                         break;
                     case "Initial_Time_H":
@@ -194,6 +196,11 @@ namespace LGThingApi.Devices
         }
 
         public double RemainingSeconds
+        {
+            get; set;
+        }
+
+        public bool IsWorking
         {
             get; set;
         }

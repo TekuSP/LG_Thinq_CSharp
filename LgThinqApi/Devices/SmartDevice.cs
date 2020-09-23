@@ -51,7 +51,7 @@ namespace LGThingApi.Devices
         {
             await Communication.LGGateway.StartMonitoring(this);
             monitorRunning = true;
-            Poll(frequency);
+            _ = Task.Run(new System.Action(() => { Poll(frequency); }));
         }
         /// <summary>
         /// Stops monitoring and ends task
@@ -69,6 +69,16 @@ namespace LGThingApi.Devices
         private async void Poll(int sleepLenght)
         {
             byte[] res;
+            for (int i = 0; i < 10; i++) //Initial data polling
+            {
+                if (monitorRunning)
+                {
+                    res = await Communication.LGGateway.PollMonitor(this);
+                    if (res != null)
+                        MonitorPoll(this, res);
+                    Thread.Sleep(300);
+                }
+            }
             while (monitorRunning)
             {
                 res = await Communication.LGGateway.PollMonitor(this);

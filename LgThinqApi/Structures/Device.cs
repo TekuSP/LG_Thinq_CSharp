@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Text;
 using static LGThingApi.Enums;
 using LGThingApi.Extensions;
+using System.ComponentModel;
 
 namespace LGThingApi.Structures
 {
-    public class Device
+    public class Device : INotifyPropertyChanged
     {
         public Device(Device anotherDevice)
         {
@@ -137,6 +138,8 @@ namespace LGThingApi.Structures
         public Translate ProductTranslate { get; set; }
         [JsonIgnore]
         public ModelInfo ModelInfo { get; set; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
     }
     public class Translate
     {

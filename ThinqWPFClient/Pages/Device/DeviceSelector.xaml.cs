@@ -30,10 +30,10 @@ namespace ThinqAClient.Pages.Device
             Loaded += DeviceSelector_Loaded;
         }
 
-        private void DeviceSelector_Loaded(object sender, RoutedEventArgs e)
+        private async void DeviceSelector_Loaded(object sender, RoutedEventArgs e)
         {
-           var wash = new Washer(devices.First());
-           wash.StartMonitor(500);
+            var wash = new Washer(devices.First());
+            await wash.StartMonitor(30000);
             stack.Children.Add(new Devices.Washer() { DataContext = wash });
         }
     }

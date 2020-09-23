@@ -8,36 +8,49 @@
              mc:Ignorable="d" d:DataContext="{x:Type devices:Washer}"
              d:DesignHeight="450" d:DesignWidth="800">
     <materialDesign:Card Margin="15">
-        <StackPanel HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Device type: "/>
-                <TextBlock Text="{Binding DeviceType, Mode=OneWay, NotifyOnSourceUpdated=True}"/>
+        <Grid HorizontalAlignment="Left" VerticalAlignment="Center" Margin="5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="1">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Device type: "/>
+                    <TextBlock Text="{Binding DeviceType, Mode=OneWay, NotifyOnSourceUpdated=True, IsAsync=True}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Device alias: "/>
+                    <TextBlock Text="{Binding Alias, Mode=OneWay, NotifyOnSourceUpdated=True, IsAsync=True}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Device state: "/>
+                    <TextBlock Text="{Binding State, Mode=OneWay, NotifyOnSourceUpdated=True, IsAsync=True}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Device pre state: "/>
+                    <TextBlock Text="{Binding PreState, Mode=OneWay, NotifyOnSourceUpdated=True, IsAsync=True}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Expected time: " TextBlock.FontSize="30"/>
+                    <TextBlock Text="{Binding InitialTime, Mode=OneWay, NotifyOnSourceUpdated=True, IsAsync=True}" TextBlock.FontSize="30"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="Remaining time: " TextBlock.FontSize="30"/>
+                    <TextBlock Text="{Binding RemainingTime, Mode=OneWay, NotifyOnSourceUpdated=True, IsAsync=True}" TextBlock.FontSize="30" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding RemainingSeconds, StringFormat={}{0:#,#.0}, IsAsync=True}" TextBlock.FontSize="30"/>
+                    <TextBlock Text="%" TextBlock.FontSize="30"/>
+                </StackPanel>
             </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Device alias: "/>
-                <TextBlock Text="{Binding Alias, Mode=OneWay, NotifyOnSourceUpdated=True}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Device state: "/>
-                <TextBlock Text="{Binding State, Mode=OneWay, NotifyOnSourceUpdated=True}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Device pre state: "/>
-                <TextBlock Text="{Binding PreState, Mode=OneWay, NotifyOnSourceUpdated=True}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Expected time: " TextBlock.FontSize="30"/>
-                <TextBlock Text="{Binding InitialTime, Mode=OneWay, NotifyOnSourceUpdated=True}" TextBlock.FontSize="30"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Remaining time: " TextBlock.FontSize="30"/>
-                <TextBlock Text="{Binding RemainingTime, Mode=OneWay, NotifyOnSourceUpdated=True}" TextBlock.FontSize="30" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal">
-                <ProgressBar Height="30" Width="500" BorderThickness="2" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Minimum="0" Maximum="100" Value="{Binding RemainingSeconds}" IsEnabled="True"/>
-                <TextBlock Text="{Binding RemainingSeconds, StringFormat={}{0:#,#.0}}" TextBlock.FontSize="30" Margin="5"/>
-                <TextBlock Text="%" TextBlock.FontSize="30" Margin="5"/>
-            </StackPanel>
-        </StackPanel>
+            <materialDesign:Card HorizontalAlignment="Left" VerticalAlignment="Center" Width="160" Height="160" UniformCornerRadius="140" Padding="4">
+                <Grid>
+                    <Image Width="100" Height="100" Source="{Binding ImageUrl, Mode=OneWay, NotifyOnSourceUpdated=True, IsAsync=True}"/>
+                    <Viewbox Width="150" Height="150" Margin="-5">
+                        <ProgressBar Style="{StaticResource MaterialDesignCircularProgressBar}" Minimum="0" Maximum="100" Value="{Binding RemainingSeconds}" IsIndeterminate="{Binding IsWorking, IsAsync=True}"/>
+                    </Viewbox>
+                </Grid>
+            </materialDesign:Card>
+        </Grid>
     </materialDesign:Card>
 </UserControl>
