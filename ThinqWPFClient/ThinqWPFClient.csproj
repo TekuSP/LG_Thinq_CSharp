@@ -27,7 +27,7 @@
     <PackageReference Include="PropertyChanged.Fody" Version="3.3.3" >
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="MaterialDesignColors" Version="1.2.7" />
+    <PackageReference Include="MaterialDesignColors" Version="2.0.0" />
     <PackageReference Include="MaterialDesignThemes" Version="4.0.0" />
   </ItemGroup>
   <ItemGroup>
