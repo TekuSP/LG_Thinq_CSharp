@@ -60,13 +60,13 @@ namespace LGThingApi
                         }
                         else
                         {
-                            throw new LGExceptions.NotLoggedInException();
+                            throw new LGExceptions.NotLoggedInException(dataReturn?.ReturnMsg);
                         }
                         break;
                     case "0106":
-                        throw new LGExceptions.NotConnectedException();
+                        throw new LGExceptions.NotConnectedException(dataReturn?.ReturnMsg);
                     default:
-                        throw new LGExceptions.ApiException(dataReturn.ReturnMsg);
+                        throw new LGExceptions.ApiException(dataReturn?.ReturnMsg);
                 }
             communicationClient.DefaultRequestHeaders.Clear();
             return dataReturn;
